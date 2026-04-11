@@ -3,343 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recetario Ayudante Cocina</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Recetario Git</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        @keyframes slideIn {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-        .animate-slide-up { animation: slideIn 0.3s ease-out; }
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: auto; }
+        .menu-container { margin-bottom: 30px; background: #f4f4f4; padding: 15px; border-radius: 8px; }
+        select { width: 100%; padding: 10px; font-size: 16px; }
+        .receta { display: none; border-top: 2px solid #eee; padding-top: 20px; }
+        .receta.active { display: block; }
+        h1 { color: #333; text-transform: uppercase; }
+        h2 { color: #555; border-bottom: 1px solid #ccc; }
+        .seccion { font-weight: bold; margin-top: 15px; text-decoration: underline; }
+        pre { white-space: pre-wrap; font-family: inherit; }
+        .nota { background: #fff8e1; padding: 10px; border-left: 5px solid #ffe082; margin-top: 20px; }
     </style>
 </head>
-<body class="bg-slate-50">
-    <div id="root"></div>
+<body>
 
-    <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
+<div class="menu-container">
+    <label for="selector-recetas">Selecciona un platillo:</label>
+    <select id="selector-recetas" onchange="mostrarReceta()">
+        <option value="">-- Elige una receta --</option>
+        <option value="pepitoria">POLLO PEPITORIA</option>
+        <option value="teriyaki">POLLO TERIYAKI</option>
+        <option value="panadera">PATATAS PANADERA</option>
+        <option value="tortilla">TORTILLA DE PATATA</option>
+        <option value="escabeche">TRUCHA EN ESCABECHE</option>
+        <option value="bilbaina">GALLO A LA BILBAINA</option>
+        <option value="paella">PAELLA MIXTA</option>
+        <option value="risotto">RISOTTO DE SETAS</option>
+        <option value="hamburguesa-pan">PAN DE HAMBURGUESA</option>
+        <option value="hamburguesa-autor">HAMBURGUESA DE AUTOR</option>
+        <option value="pasta">PASTA FRESCA</option>
+        <option value="focaccia">FOCACCIA</option>
+        <option value="pisto">PISTO CON HUEVO ESCALFADO</option>
+        <option value="croquetas">CROQUETAS</option>
+    </select>
+</div>
 
-        const RECIPES = [
-            {
-                id: 1,
-                title: "Pasta Fresca",
-                category: "Pastas",
-                time: "15 min reposo",
-                difficulty: "Baja",
-                ingredients: ["100 gr. de harina", "1 huevo", "10 gr. de aceite", "1 gr. de sal"],
-                steps: [
-                    "En un bol ponemos todos los ingredientes y amasamos hasta formar una masa uniforme y homogénea. Tiene que quedar blandita, no seca.",
-                    "Reposamos mínimo 15 minutos envuelta en film a temperatura ambiente.",
-                    "Ponemos un poco de harina en mesa y estiramos con rodillo o máquina hasta dejarla de unos 3 mm de grosor.",
-                    "Si es pasta simple: dejar secar y cortar. Si es rellena: no dejar secar, rellenar y tapar con otra lámina.",
-                    "Cocer en agua hirviendo durante 2-3 minutos."
-                ],
-                davidTip: "El reposo es sagrado para que el gluten se relaje. Si la masa está muy seca, humedece tus manos en lugar de echar agua directa.",
-                tips: "Se puede añadir tinta de calamar, concentrado de tomate o puré de remolacha para dar color/sabor."
-            },
-            {
-                id: 2,
-                title: "Focaccia",
-                category: "Masas",
-                time: "20 min amasado",
-                difficulty: "Media",
-                ingredients: [
-                    "250 gr. de harina de fuerza", "5 gr de sal", "10 gr de azúcar", 
-                    "150 ml de agua", "4 gr. de levadura liofilizada", "20 gr de aceite de oliva",
-                    "Decoración: Tomates cherry, Orégano o tomillo fresco, Escama de sal, Aceite de oliva, Cebolla en juliana"
-                ],
-                steps: [
-                    "En un bol ponemos la harina, la sal, el azúcar, el agua y el aceite. Mezclamos hasta conseguir un engrudo y añadimos la levadura.",
-                    "Amasamos durante 20 minutos hasta conseguir una masa homogénea, elástica y muy blandita.",
-                    "Fermentamos tapada con paño húmedo hasta que doble su volumen.",
-                    "Desgasificar y estirar con las manos sobre bandeja con papel sulfurizado.",
-                    "Añadir los toppings y dejar fermentar 10 minutos más.",
-                    "Horneamos 20 minutos a 180-200 grados."
-                ],
-                davidTip: "Realizar 3 ciclos de pliegues cada 30 min. Poner aceite bajo el film para que no se pegue.",
-                tips: "Cada harina absorbe distinto; es posible que necesites ajustar el agua durante el amasado."
-            },
-            {
-                id: 3,
-                title: "Pan de Hamburguesa",
-                category: "Masas",
-                time: "2h aprox",
-                difficulty: "Media",
-                ingredients: [
-                    "250 gr. de harina de fuerza", "150 ml de agua", "6 gr. de levadura liofilizada", 
-                    "5 gr. de sal", "10 gr. de azúcar", "1 cda de leche en polvo", 
-                    "20 gr. de mantequilla o manteca de cerdo", "1 huevo batido (pintar)", "Semillas de amapola o sésamo"
-                ],
-                steps: [
-                    "Mezclar en bol: harina, azúcar, sal y leche en polvo.",
-                    "Añadir la mantequilla/manteca fundida, el agua y la levadura.",
-                    "Amasar hasta tener una masa elástica, blanda y homogénea.",
-                    "Fermentar hasta doblar el volumen.",
-                    "Dividir la masa (2 grandes u 8 pequeños), desgasificar y bolear.",
-                    "Fermentar unos 10 minutos (Ajuste David).",
-                    "Pintar con huevo y añadir semillas.",
-                    "Hornear a 180ºC (18-22 min grandes / 15-17 min pequeños)."
-                ],
-                davidTip: "Bolear dando mucha tensión. No estirar la masa en forma alargada, queremos bolas perfectas.",
-                tips: "Con esta cantidad salen 2 unidades grandes u 8 pequeñas."
-            },
-            {
-                id: 4,
-                title: "Paella Mixta",
-                category: "Arroces",
-                time: "17 min cocción",
-                difficulty: "Alta",
-                ingredients: [
-                    "320 gr. de arroz", "1 pechuga de pollo", "3 chipirones", "100 gr. langostinos", "300 gr. mejillones",
-                    "2 ajos", "1 pimiento verde", "½ pimiento rojo", "2 tomates", "60 ml aceite", "1L caldo", "Sal, colorante/azafrán, pimentón"
-                ],
-                steps: [
-                    "Dorar la pechuga troceada en aceite y retirar.",
-                    "Dorar ajo, añadir pimientos. Cuando doren, añadir langostinos pelados y chipirones.",
-                    "Añadir de nuevo el pollo. Cuando se 'agarre', añadir el tomate troceado.",
-                    "Añadir colorante, azafrán y pimentón.",
-                    "Nacarar el arroz. Añadir caldo caliente y sal.",
-                    "Cocer 5 minutos a fuego vivo y 12 minutos a fuego suave.",
-                    "NO VOLVER A REMOVER LA PAELLA CON NINGÚN UTENSILIO."
-                ],
-                davidTip: "Respetar los 5 minutos de reposo tapada al final.",
-                tips: "Es vital conocer el arroz para saber el caldo exacto que absorbe."
-            },
-            {
-                id: 5,
-                title: "Risotto de Setas",
-                category: "Arroces",
-                time: "25 min",
-                difficulty: "Media",
-                ingredients: [
-                    "400g arroz carnaroli/arborio", "200g setas/champiñones", "1 cebolla", "2 ajos", 
-                    "800ml-1L caldo", "100g mantequilla", "100g Parmesano rallado", "Sal y pimienta"
-                ],
-                steps: [
-                    "Pochar ajo y cebolla en mantequilla fundida. Salpimentar.",
-                    "Añadir las setas laminadas y cocinarlas 5 minutos.",
-                    "Incorporar el arroz y sellarlo.",
-                    "Añadir el caldo caliente poco a poco sin parar de remover.",
-                    "Mantecar fuera del fuego con mantequilla y queso."
-                ],
-                davidTip: "Mantecar con la grasa (mantequilla) muy fría para crear la emulsión.",
-                tips: "Originalmente se utiliza el parmesano."
-            },
-            {
-                id: 6,
-                title: "Pisto con Huevo Escalfado",
-                category: "Verduras",
-                time: "60 min",
-                difficulty: "Media",
-                ingredients: [
-                    "1 kg cebollas", "1 kg pimiento verde", "1 kg pimiento rojo", "1 kg calabacín", 
-                    "3 kg tomate pelado", "500 ml aceite", "20g sal", "50g azúcar", "Huevo, film, aceite"
-                ],
-                steps: [
-                    "Cortar verduras en brunoisse.",
-                    "Pochar cebolla, añadir pimientos hasta que estén tiernos.",
-                    "Añadir calabacín y cocinar.",
-                    "Añadir tomate, sal y azúcar. Reducir hasta que el tomate baje a la mitad.",
-                    "Escalfar huevo en film (aceite+sal) a 80ºC durante 5-6 min.",
-                    "Refrescar en agua fría y retirar film."
-                ],
-                davidTip: "Concentrar bien el tomate es la clave del pisto.",
-                tips: "Se puede sustituir el calabacín por berenjena."
-            },
-            {
-                id: 7,
-                title: "Croquetas de Jamón",
-                category: "Entrantes",
-                time: "4h reposo",
-                difficulty: "Media",
-                ingredients: [
-                    "100 gr. harina", "100 gr. mantequilla", "700 ml leche", "150 gr. jamón picado",
-                    "3 huevos", "Sal y nuez moscada", "Pan rallado y harina", "1L aceite girasol"
-                ],
-                steps: [
-                    "Hacer ROUX: fundir mantequilla y cocinar harina 3 min.",
-                    "Añadir leche poco a poco con varilla hasta tener masa suave.",
-                    "Añadir jamón, sal y nuez moscada.",
-                    "Bolear, pasar por harina, huevo y pan rallado.",
-                    "Freír en aceite abundante y caliente."
-                ],
-                davidTip: "Usar Corn Flakes machacados para el rebozado final. Cocinar bien el roux para que no sepa a harina.",
-                tips: "La bechamel debe enfriar completamente antes de bolear."
-            },
-            {
-                id: 8,
-                title: "Pollo Pepitoria",
-                category: "Carnes",
-                time: "45 min",
-                difficulty: "Media",
-                ingredients: [
-                    "½ pollo (cuarto trasero)", "1 cebolla", "2 ajos", "150 ml vino blanco",
-                    "½ L caldo ave", "1 huevo cocido", "Azafrán, 1 rebanada pan, 50g almendras", "Aceite, sal, pimienta"
-                ],
-                steps: [
-                    "Picar cebolla y ajos en brunoisse. Cocer huevo 9-11 min.",
-                    "Marcar pollo salpimentado y retirar.",
-                    "Pochar cebolla/ajo, reincorporar pollo y desglasar con vino.",
-                    "Añadir majado (pan tostado, almendras, yema cocida y azafrán).",
-                    "Cubrir con caldo y cocer 20-25 min.",
-                    "Decorar con la clara picada."
-                ],
-                davidTip: "El majado debe estar bien triturado para ligar la salsa.",
-                tips: "Se puede usar brandy en vez de vino blanco."
-            }
-        ];
+<div id="contenido-recetas">
+    <div id="pepitoria" class="receta">
+        <h1>POLLO PEPITORIA</h1>
+        <div class="seccion">INGREDIENTES</div>
+        <pre>½ pollo, preferiblemente cuarto trasero 
+1 cebolla 
+2 dientes de ajo 
+150 ml de vino blanco 
+½ lito de caldo de ave 
+1 huevo 
+Unas hebras de azafrán 
+1 rebanada de pan 
+50 gr. de almendras 
+Aceite, sal y pimienta</pre>
+        <div class="seccion">ELABORACION</div>
+        <pre>Troceamos la cebolla y los ajos en brunoisse 
+Cocemos el huevo en agua hirviendo durante 9-11 minutos. Refrescamos y pelamos 
+Salpimentamos el pollo, lo marcamos en un rondón y retiramos 
+Añadimos al rondón la cebolla y el ajo picado cocinamos hasta obtener un color dorado en nuestras verduras, volvemos a meter los trozos de pollo que teníamos marcados y desglasamos con vino blanco. 
+Añadimos el pan tostado y triturado, las almendras trituradas, la yema de huevo cocida y desmigada y el azafrán. 
+Cubrimos con el caldo de ave y cocemos durante 20-25 minutos. 
+Servimos en un plato y decoramos con la clara cocida y picada</pre>
+        <div class="nota">NOTA: Podemos sustituir el fondo de ave por agua y el vino blanco por brandy.</div>
+    </div>
 
-        const CATEGORIES = ["Todas", "Masas", "Arroces", "Carnes", "Verduras", "Entrantes", "Pescados", "Pastas"];
+    <div id="teriyaki" class="receta">
+        <h1>POLLO TERIYAKI</h1>
+        <div class="seccion">INGREDIENTES:</div>
+        <pre>700 gr. de pechuga de pollo en dados 
+1 cebolla 
+1 pimiento rojo 
+1 pimiento verde 
+200 ml de aceite 
 
-        function App() {
-            const [search, setSearch] = useState("");
-            const [activeCategory, setActiveCategory] = useState("Todas");
-            const [selectedRecipe, setSelectedRecipe] = useState(null);
+PARA LA SALSA: 
+150 ml de salsa de soja 
+50 ml de vinagre de arroz 
+30 ml de mirin 
+2 cucharadas de azúcar 
 
-            // Refrescar iconos de Lucide cada vez que el DOM cambia
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [selectedRecipe, activeCategory, search]);
+PARA DECORAR: 
+Jengibre fresco rallado 
+Anacardos picados 
+Ralladura de lima 
+1 cucharada de sésamo tostado 
+Unas hojas de menta o albahaca picada</pre>
+        <div class="seccion">ELABORACIÓN</div>
+        <pre>Trocear la cebolla y los pimientos en mirepoix o paisana 
+En una sartén saltear la cebolla y los pimientos hasta dejarlos al dente. Retirar. 
+En la misma sartén marcar los dados de pollo, no deben cocinarse hasta el final. Retirar 
+Realizaremos la salsa en esa sartén para aprovechar los jugos. 
+Pondremos todos los ingredientes de la salsa y lo llevaremos al fuego. Dejaremos cocer hasta obtener una salsa algo ligada. 
+Añadiremos las verduras y el pollo a la salsa y cocinaremos durante 10 minutos para que el pollo quede completamente cocinado. 
+Serviremos con el sésamo, el jengibre, la ralladura de lima y las hierbas frescas.</pre>
+        <div class="nota">NOTA: Esta receta NO lleva sal ya que la soja es bastante salada.</div>
+    </div>
 
-            const filteredRecipes = useMemo(() => {
-                return RECIPES.filter(recipe => {
-                    const matchSearch = recipe.title.toLowerCase().includes(search.toLowerCase()) || 
-                                      recipe.ingredients.some(ing => ing.toLowerCase().includes(search.toLowerCase()));
-                    const matchCat = activeCategory === "Todas" || recipe.category === activeCategory;
-                    return matchSearch && matchCat;
-                });
-            }, [search, activeCategory]);
+    <div id="panadera" class="receta">
+        <h1>PATATAS PANADERA</h1>
+        <div class="seccion">INGREDIENTES PARA 12 PAX</div>
+        <pre>2 kg de patatas 
+1½ kg de cebollas 
+1 cucharadita de sal 
+1 cucharadita de pimienta negra 
+100 ml de aceite de oliva 
+250 ml de vino blanco o fondo de ave</pre>
+        <div class="seccion">ELABORACION</div>
+        <pre>Pelar las patatas. Cortarlas en rodajas de 0,5 cm de grosor (española) 
+Pelar las cebollas y cortarlas en juliana fina. 
+En una bandeja gastronorm poner las patatas laminadas y la cebolla. Salpimentar y añadir el aceite. Mezclar todo bien. 
+Hornear a 180ºC durante 15 minutos. 
+Abrir el horno, añadir el vino o el fondo y remover. 
+Hornear nuevamente unos 15 minutos hasta que queden tiernas.</pre>
+        <div class="nota">NOTA: También le podemos añadir pimiento verde cortado en paisana o mirepoix.</div>
+    </div>
 
-            return (
-                <div className="min-h-screen pb-20">
-                    <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100 p-6">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="bg-slate-900 p-2.5 rounded-2xl shadow-lg">
-                                <i data-lucide="chef-hat" className="text-orange-500 w-8 h-8"></i>
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-black italic tracking-tighter uppercase leading-none">
-                                    Recetario<span className="text-orange-600">Aranda</span>
-                                </h1>
-                                <p className="text-[9px] font-bold text-slate-400 tracking-widest uppercase mt-1">Creado por: David H </p>
-                            </div>
-                        </div>
-                        <div className="relative mb-4">
-                            <i data-lucide="search" className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5"></i>
-                            <input 
-                                type="text" 
-                                placeholder="Buscar receta o ingrediente..." 
-                                className="w-full bg-slate-100 border-none rounded-2xl py-3.5 pl-12 pr-4 text-sm font-bold focus:ring-2 focus:ring-orange-500 outline-none transition-all"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
-                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
-                            {CATEGORIES.map(cat => (
-                                <button 
-                                    key={cat} 
-                                    onClick={() => setActiveCategory(cat)}
-                                    className={`px-5 py-2 rounded-xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap ${activeCategory === cat ? "bg-slate-900 text-white" : "bg-white text-slate-400 border border-slate-100"}`}
-                                >
-                                    {cat.toUpperCase()}
-                                </button>
-                            ))}
-                        </div>
-                    </header>
+    <div id="tortilla" class="receta">
+        <h1>TORTILLA DE PATATA</h1>
+        <div class="seccion">INGREDIENTES:</div>
+        <pre>2 kg de patatas 
+½ de cebolla 
+1 litro de aceite de oliva o girasol 
+6-8 huevos 
+Sal 
+Pimienta.</pre>
+        <div class="seccion">ELABORACIÓN</div>
+        <pre>Pelar las patatas y cortarlas en rodajas 
+Pelar la cebolla y cortarla en juliana 
+Pochar las patatas y la cebolla en una sartén hasta que estén doraditas. Escurrirlas y salpimentar. 
+Batir los huevos en un bol y añadir las patatas y la cebolla pochada. 
+Calentar en una sartén antiadherente una cucharada de aceite y volcar en ella el bol con la mezcla de patatas, cebolla y huevos. 
+Cuajar la tortilla a fuego medio durante unos 10 minutos por cada lado.</pre>
+        <div class="nota">NOTA: Hay que tener en cuenta que si las patatas están calientes absorberán mucho más huevo que si están frías. Para dar la vuelta a la tortilla poner un poco de aceite en el plato o la tapa, de este modo evitamos que queden restos de patata. Una vez dada la vuelta a la tortilla pinchar con un palillo o brocheta para cuajar más rápido</div>
+    </div>
 
-                    <main className="p-6 grid grid-cols-1 gap-6">
-                        {filteredRecipes.map(recipe => (
-                            <div 
-                                key={recipe.id} 
-                                onClick={() => setSelectedRecipe(recipe)} 
-                                className="bg-white p-5 rounded-[2rem] shadow-sm border border-slate-100 flex justify-between items-center active:scale-95 transition-transform cursor-pointer"
-                            >
-                                <div>
-                                    <span className="text-[10px] font-black text-orange-600 bg-orange-50 px-3 py-1 rounded-full uppercase tracking-widest">{recipe.category}</span>
-                                    <h3 className="text-xl font-black text-slate-800 mt-2 tracking-tight">{recipe.title}</h3>
-                                    <div className="flex items-center gap-3 mt-2 text-slate-400 text-[10px] font-bold">
-                                        <span className="flex items-center gap-1"><i data-lucide="clock" className="w-3 h-3 text-orange-400"></i>{recipe.time}</span>
-                                        <span className="flex items-center gap-1"><i data-lucide="flame" className="w-3 h-3 text-orange-400"></i>{recipe.difficulty}</span>
-                                    </div>
-                                </div>
-                                <div className="bg-slate-50 p-3 rounded-2xl">
-                                    <i data-lucide="chevron-right" className="text-orange-500"></i>
-                                </div>
-                            </div>
-                        ))}
-                    </main>
+    <div id="escabeche" class="receta">
+        <h1>TRUCHA EN ESCABECHE</h1>
+        <div class="seccion">INGREDIENTES</div>
+        <pre>1 trucha 
+½ cebolla en juliana 
+2 dientes de ajo 
+2 hojas de laurel 
+Pimienta en grano 
+100 ml de aceite 
+1½ vaso de vinagre 
+vaso de vino blanco 
+1 zanahoria en juliana 
+Agua 
+Sal y pimienta molida 
+Harina</pre>
+        <div class="seccion">ELABORACION</div>
+        <pre>Eviscerar la trucha y sacar limpios los lomos. Salpimentarlos. Pasarlos por harina 
+En un rondón calentar un poco de aceite y marcar los lomos de truchas por ambos lados. Retirar. 
+En el mismo rondón dorar la cebolla en juliana, la zanahoria, los ajos en láminas, el laurel y la pimienta en grano. 
+Metemos nuevamente en el rondón con las verduras el pescado y añadimos el vino, el vinagre y cubrimos ligeramente con agua. 
+Hervimos durante 10 minutos.</pre>
+        <div class="nota">NOTA: Este escabeche vale lo mismo para pescado como para carnes blancas.</div>
+    </div>
 
-                    {selectedRecipe && (
-                        <div className="fixed inset-0 z-50 bg-white overflow-y-auto p-6 animate-slide-up">
-                            <button 
-                                onClick={() => setSelectedRecipe(null)} 
-                                className="fixed top-6 right-6 z-50 bg-slate-900 text-white p-3 rounded-2xl shadow-xl active:scale-90 transition-transform"
-                            >
-                                <i data-lucide="x"></i>
-                            </button>
-                            
-                            <div className="mt-12 max-w-2xl mx-auto">
-                                <span className="text-xs font-black text-orange-600 uppercase tracking-widest">{selectedRecipe.category}</span>
-                                <h2 className="text-4xl font-black text-slate-900 mt-2 mb-8 tracking-tighter leading-none">{selectedRecipe.title}</h2>
-                                
-                                {selectedRecipe.davidTip && (
-                                    <div className="bg-orange-600 p-6 rounded-[2rem] text-white mb-10 shadow-xl shadow-orange-100">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <i data-lucide="zap" className="w-5 h-5 fill-white"></i>
-                                            <span className="text-[10px] font-black uppercase tracking-widest">Nota de David</span>
-                                        </div>
-                                        <p className="text-lg font-bold italic">"{selectedRecipe.davidTip}"</p>
-                                    </div>
-                                )}
+    <div id="bilbaina" class="receta">
+        <h1>GALLO A LA BILBAINA</h1>
+        <div class="seccion">INGREDIENTES:</div>
+        <pre>1 gallo de ración 
+2 dientes de ajo laminado 
+Cayena 
+Aceite 
+Sal 
+Pimienta molida 
+½ vaso de vinagre 
+Perejil fresco picado</pre>
+        <div class="seccion">ELABORACIÓN</div>
+        <pre>Limpiar el gallo y sacar los cuatro filetes. Salpimentarlos. 
+En una sartén añadir aceite y marcar los filetes de pescado por ambas caras, retirar. 
+En esa sartén dorar los ajos laminados y la guindilla, añadir el vinagre y dar un hervor. 
+Añadir los ajos con el vinagre y la guindilla por encima de los filetes de pescado. Decorar con perejil picado</pre>
+        <div class="nota">NOTA: esta elaboración también se conoce con el nombre de "a la espalda"</div>
+    </div>
 
-                                <section className="mb-10">
-                                    <h4 className="text-xl font-black mb-4 flex items-center gap-2 italic tracking-tighter border-l-4 border-orange-500 pl-3">Ingredientes</h4>
-                                    <div className="grid gap-2">
-                                        {selectedRecipe.ingredients.map((ing, i) => (
-                                            <div key={i} className="bg-slate-50 p-4 rounded-2xl text-sm font-bold text-slate-700 flex items-center gap-3">
-                                                <div className="w-2 h-2 rounded-full bg-orange-500"></div>{ing}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
+    <div id="paella" class="receta">
+        <h1>PAELLA MIXTA</h1>
+        <div class="seccion">INGREDIENTES</div>
+        <pre>2 dientes de ajo 
+1 pimiento verde 
+½ pimiento rojo 
+2 tomates 
+100 gr. de langostinos 
+3 chipirones 
+1 pechuga de pollo 
+320 gr. de arroz 
+300 gr. de mejillones 
+60 ml de aceite 
+1 litro de caldo de pollo o de verduras 
+Sal</pre>
+        <div class="seccion">ELABORACION</div>
+        <pre>Calentar en la paellera el aceite, cuando humee añadir la pechuga de pollo salpimentada y troceada. 
+Dejar que coja color y retirar. 
+Añadir el ajo, cuando esté ligeramente dorado añadimos el pimiento rojo y verde troceado. 
+Una vez el pimiento esté dorado añadir los langostinos pelados y los chipirones. Añadir de nuevo el pollo. 
+Cuando se empiece a agarrar añadir el tomate troceado. Cuando esté hecho añadir el color (colorante y/o azafrán + pimentón) 
+Añadir el arroz y remover hasta que adquiera el color del sofrito. 
+Añadir el caldo, remover y probar el punto de sal. 
+Cocer 5 minutos a fuego vivo y 12 minutos a fuego suave. 
+NO VOLVER A REMOVER LA PAELLA CON NINGUN UTENSILIO</pre>
+        <div class="nota">NOTA: Es muy importante conocer el tipo de arroz que utilizamos para saber el tiempo de cocción y la cantidad de caldo que absorbe.</div>
+    </div>
 
-                                <section className="mb-10">
-                                    <h4 className="text-xl font-black mb-6 flex items-center gap-2 italic tracking-tighter border-l-4 border-orange-500 pl-3">Elaboración</h4>
-                                    <div className="space-y-6">
-                                        {selectedRecipe.steps.map((step, i) => (
-                                            <div key={i} className="flex gap-4">
-                                                <span className="flex-shrink-0 w-8 h-8 bg-slate-900 text-white rounded-xl flex items-center justify-center font-black text-sm">{i+1}</span>
-                                                <p className="text-slate-600 font-medium leading-relaxed">{step}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
+    <div id="risotto" class="receta">
+        <h1>RISOTTO DE SETAS</h1>
+        <div class="seccion">INGREDIENTES:</div>
+        <pre>400g de arroz carnaroli o arborio 
+200g de setas y/o champiñones 
+1 cebolla 
+800ml-1 litro de caldo de carne o de verduras 
+100g de mantequilla 
+100g de queso curado rallado: Originalmente se utiliza el parmesano 
+Sal y pimienta 
+2 dientes de ajo</pre>
+        <div class="seccion">ELABORACIÓN</div>
+        <pre>Fundir la mantequilla y pochar en ella el ajo y la cebolla picados. Poner al punto de sal y pimienta. 
+Añadir las setas laminadas y cocinarlas 5 minutos 
+Incorporar el arroz y sellarlo. Añadir caldo poco a poco sin parar de remover hasta que el arroz esté al dente. 
+Incorporar una nuez de mantequilla y el queso. Remover hasta que todo quede fundido.</pre>
+        <div class="nota">NOTA: Es muy importante que el arroz quede cremoso y al dente.</div>
+    </div>
 
-                                <section className="bg-slate-900 p-8 rounded-[2.5rem] text-white mb-20">
-                                    <div className="flex items-center gap-2 mb-3 text-orange-500">
-                                        <i data-lucide="lightbulb" className="w-6 h-6 fill-orange-500"></i>
-                                        <span className="font-black uppercase tracking-widest text-xs">Sugerencia</span>
-                                    </div>
-                                    <p className="text-slate-300 italic font-medium">"{selectedRecipe.tips}"</p>
-                                </section>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
+    <div id="hamburguesa-pan" class="receta">
+        <h1>PAN DE HAMBURGUESA</h1>
+        <div class="seccion">INGREDIENTES</div>
+        <pre>250 gr. de harina de fuerza 
+150 ml de agua 
+6 gr. de levadura liofilizada 
+5 gr. de sal 
+10 gr. de azúcar 
+1 cucharada de leche en polvo 
+20 gr. de mantequilla o manteca de cerdo 
+1 huevo batido 
+Semillas de amapola o sésamo</pre>
+        <div class="seccion">ELABORACION</div>
+        <pre>Poner en un bol la harina, el azúcar, la sal y la leche en polvo. 
+Añadir la mantequilla o la manteca fundida, el agua y la levadura. 
+Amasar hasta conseguir una masa elástica, blanda y homogénea. 
+Fermentar hasta doblar el volumen. 
+Dividir la masa en dos, amasar para sacar el aire a la masa y formar dos bolas. 
+Fermentar unos 15 minutos. 
+Pintar con el huevo batido y añadir semillas de amapola o sésamo 
+Hornear a 180°C durante 18-22 minutos.</pre>
+        <div class="nota">NOTA: Con esta cantidad se obtienen 2 panes de hamburguesa grandes u 8 pequeños. En el caso de hacer panes pequeños reduciremos el horneado a 15-17 minutos.</div>
+    </div>
+
+    <div id="hamburguesa-autor" class="receta">
+        <h1>HAMBURGUESA DE AUTOR</h1>
+        <div class="seccion">INGREDIENTES:</div>
+        <pre>150 gr. de carne picada de ternera 
+1 tomate 
+2 hojas de lechuga 
+Especias al gusto</pre>
+        <div class="seccion">ELABORACIÓN</div>
+        <pre>Macerar la carne al gusto con las especias elegidas, tapar con film y dejar reposar 15 minutos. 
+Formar la hamburguesa y hacerla en sauté por ambos lados. 
+Cortar el tomate en rodajas y picar la lechuga</pre>
+        <div class="nota">NOTA: En la elaboración de esta receta podemos utilizar los ingredientes deseados para macerar nuestra carne como salsa de soja, perrins, especias, mostaza etc.</div>
+    </div>
+
+    <div id="pasta" class="receta">
+        <h1>PASTA FRESCA</h1>
+        <div class="seccion">INGREDIENTES PARA 1 PAX</div>
+        <pre>100 gr. de harina 
+1 huevo 
+10 gr. de aceite 
+1 gr. de sal</pre>
+        <div class="seccion">ELABORACION</div>
+        <pre>En un bol ponemos todos los ingredientes y amasamos hasta formar una masa uniforme y homogénea. 
+Tiene que quedar blandita, no seca. 
+Reposamos mínimo 15 minutos envuelta en film a temperatura ambiente. 
+Ponemos un poco de harina en mesa y estiramos con rodillo o con máquina de pasta hasta dejarla de unos 3 mm de grosor. 
+Si vamos a realizar pasta simple dejaremos secar y posteriormente la cortaremos con el diseño deseado por la máquina de pasta o a cuchillo. 
+Si vamos a realizar pasta rellena no hay que dejarla secar. Empezaremos a poner el relleno, taparemos con otra lámina de pasta y cortaremos. 
+Ponemos agua a hervir en un rondón y coceremos nuestra pasta durante 2-3 minutos.</pre>
+        <div class="nota">NOTA: Podemos realizar pasta compuesta añadiendo a nuestra receta original otro ingrediente que aporte color y/o sabor como puede ser tinta de calamar, concentrado de tomate, puré de remolacha, etc.</div>
+    </div>
+
+    <div id="focaccia" class="receta">
+        <h1>FOCACCIA</h1>
+        <div class="seccion">INGREDIENTES PARA LA MASA:</div>
+        <pre>250 gr. de harina de fuerza 
+5 gr de sal 
+10 gr de azúcar 
+150 ml de agua 
+4 gr. de levadura liofilizada 
+20 gr de aceite de oliva 
+
+PARA DECORAR: 
+Tomates cherry 
+Orégano o tomillo fresco 
+Escama de sal 
+Aceite de oliva 
+Cebolla en juliana</pre>
+        <div class="seccion">ELABORACIÓN</div>
+        <pre>En un bol ponemos la harina, la sal, el azúcar, el agua y el aceite. 
+Mezclamos hasta conseguir un engrudo y es en ese momento cuando le añadimos la levadura. 
+Amasamos durante 20 minutos hasta conseguir una masa homogénea, elástica y muy blandita. 
+Fermentamos la masa tapada con un paño húmedo y en un lugar cálido hasta que doble su volumen. Este proceso variará en función de la temperatura y humedad de la estancia. 
+Una vez fermentada, amasamos para desgasificar y estiramos con las manos sobre una bandeja de horno a la que le pondremos papel sulfurizado. 
+Añadimos los tomates cherrys cortados a la mitad, la escama de sal, el orégano o tomillo y un chorrito de aceite. 
+La dejamos fermentar unos 10 minutos más con los ingredientes. 
+Horneamos 20 minutos a 180 grados.</pre>
+        <div class="nota">NOTA: cada harina absorbe una cantidad de agua y es posible que durante el amasado tengamos que añadir un poquito más de agua. Podemos añadirle los ingredientes que nos apetezcan como cebolla, aceitunas, anchoas etc.</div>
+    </div>
+
+    <div id="pisto" class="receta">
+        <h1>PISTO CON HUEVO ESCALFADO</h1>
+        <div class="seccion">INGREDIENTES PARA EL PISTO</div>
+        <pre>1 kg de cebollas 
+1 kg pimiento verde 
+1 kg de pimiento rojo 
+1 kg de calabacín 
+3 kg de tomate entero pelado 
+500 ml de aceite 
+20 gr. de sal 
+50 gr de azúcar</pre>
+        <div class="seccion">ELABORACION</div>
+        <pre>Pelar y cortar la cebolla en brunoisse. 
+Picar los pimientos, el calabacín y los tomates en brunoisse. 
+En un rondón pochar la cebolla. Añadir los pimientos y cocinar hasta que estén tiernos. 
+Añadimos el calabacín y cocinamos. 
+Una vez todos los ingredientes anteriores estén pochados añadimos el tomate. 
+Rectificamos de sal y añadimos el azúcar. Dejamos cocinar todo el pisto hasta que el tomate reduzca a la mitad. 
+
+PARA EL HUEVO ESCALFADO 
+1 huevo 
+Agua 
+Sal 
+Aceite 
+film 
+
+ELABORACION 
+Ponemos un rectángulo de film sobre la mesa, añadimos un poco de aceite y cascamos un huevo. 
+Añadimos un poco de sal y pimienta y lo cerramos con un nudo 
+Ponemos en un cazo agua a punto de ebullición (80º) y metemos nuestro huevo atado en film. 
+Cocinamos durante 5-6 minutos. Sacamos a un bol con agua fría. 
+Cortamos el nudo del film y sacamos nuestro huevo. 
+Nos tiene que quedar la clara cuajada y la yema líquida.</pre>
+        <div class="nota">NOTA: En el pisto podemos sustituir el calabacín por berenjena.</div>
+    </div>
+
+    <div id="croquetas" class="receta">
+        <h1>CROQUETAS</h1>
+        <div class="seccion">INGREDIENTES:</div>
+        <pre>100 gr. de harina 
+100 gr. de mantequilla 
+700 ml de leche 
+Sal y nuez moscada 
+150 gr. de jamón picado 
+3 huevos 
+Pan rallado y harina para rebozar 
+1 litro de aceite de girasol para freír</pre>
+        <div class="seccion">ELABORACIÓN</div>
+        <pre>En un cazo fundimos la mantequilla, añadimos los 100 gr. de harina y cocinamos unos 3 minutos (ROUX) 
+Añadimos la leche poco a poco y removemos con una varilla hasta conseguir una masa suave y sin grumos. 
+Añadimos el jamón picado, la sal y la nuez moscada. Ponemos la bechamel en un recipiente y la dejamos enfriar. 
+Formamos las croquetas y las pasamos por harina, huevo y pan rallado. Freímos en abundante aceite caliente.</pre>
+        <div class="nota">NOTA: las croquetas las podemos hacer de múltiples ingredientes. Queso, gambas, morcilla, pollo, etc.</div>
+    </div>
+</div>
+
+<script>
+    function mostrarReceta() {
+        const select = document.getElementById('selector-recetas');
+        const recetaId = select.value;
+        const recetas = document.querySelectorAll('.receta');
+        
+        recetas.forEach(receta => {
+            receta.classList.remove('active');
+        });
+
+        if (recetaId) {
+            document.getElementById(recetaId).classList.add('active');
         }
+    }
+</script>
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
 </body>
 </html>
